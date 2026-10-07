@@ -5,25 +5,25 @@ export function initializeSocket() {
 
 
   socket.addEventListener('open', (event) => {
-    console.log(event)
+   // console.log(event)
   })
 
 
   socket.addEventListener('message', (event) => {
-    console.log(event.data)
+   // console.log(event.data)
   })
 
 
   socket.addEventListener('error', (event) => {
-    console.error("WebSocket error:", event);
+   // console.error("WebSocket error:", event);
   })
 
 
   socket.addEventListener('close', (event) => {
     if (event.wasClean) {
-      console.log(`Closed cleanly, code=${event.code}, reason=${event.reason}`);
+     // console.log(`Closed cleanly, code=${event.code}, reason=${event.reason}`);
     } else {
-      console.log("Connection died");
+     // console.log("Connection died");
     }
   })
 

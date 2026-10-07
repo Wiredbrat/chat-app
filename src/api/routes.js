@@ -2,7 +2,15 @@ const routes = {
   signup: '/signup',
   login: '/login',
   logout: '/logout',
-  getUser: '/get-user',
+  getUser: '/user',
+  getChatRooms: "/chatRooms",
+  getUserChat: "/messages"
 }
 
-export default routes;
+const chatRoutes = {
+  getChat: "/chat/chat",
+  createChatRoom: "/chat/create-chatroom",
+  saveMessage: "/chat/"
+}
+
+export {routes, chatRoutes};

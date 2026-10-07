@@ -15,22 +15,22 @@ import { getUserByUsername } from '../api/connection.js';
 function AppLayout({ auth }) {
   const chat = useChat();
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const handleSelect = (id) => {
     chat.selectConversation(id);
     navigate(`/chat/${id}`);
   };
 
-
-  const handleSearch = async (query) => {
-    try { 
-      const res = await getUserByUsername(query);
-      console.log(res); 
-    } catch (error) {
-      
+  const handleNewChat = async(id) => {
+    chat.setQuery('');
+    const newChatId = await chat.createConversation(id);
+   // console.log("new chat ",newChatId)
+    if(newChatId) {
+      navigate(`/chat/${newChatId}`);
+      setSidebarOpen(false);
     }
-  }
+  };
 
   const handleLogout = () => {
     auth.logout();
@@ -38,18 +38,20 @@ function AppLayout({ auth }) {
     navigate('/login', { replace: true });
   };
 
-  const debounceSearch = debounce(handleSearch , 1500)
   return (
     <div className="app">
       <Sidebar
         conversations={chat.conversations}
         activeId={chat.activeConversation?.id}
         onSelect={handleSelect}
-        onQueryChange={(query) => debounceSearch(query)}
+        query={chat.query}
+        // onQueryChange={(query) => debounceSearch(query)}
+        onQueryChange={chat.setQuery}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         user={auth.user}
         onLogout={handleLogout}
+        onNewChat={handleNewChat}
       />
       <Outlet context={{ chat, openSidebar: () => setSidebarOpen(true) }} />
     </div>

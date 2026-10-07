@@ -1,5 +1,5 @@
 import axios from 'axios';
-import routes from './routes';
+import { routes, chatRoutes } from './routes';
 import useAuth from '../store/userStore';
 import { useNavigate } from 'react-router-dom';
 
@@ -33,62 +33,125 @@ const axiosInstance = axios.create({
 // );
 
 export async function signup(payload) {
-    let res;
+
     try {
-        res = await axiosInstance.post(routes.signup, payload);
+        const res = await axiosInstance.post(routes.signup, payload);
         return res.data;
     } catch (error) {
-        return res.data.data.message;
+        return error.message;
     }
 }
 
 export async function login(payload) {
-    let res;
+
     try {
-        res = await axiosInstance.post(routes.login, payload);
+        const res = await axiosInstance.post(routes.login, payload);
         return res.data;
     } catch (error) {
-        return res.data.data.message;
+        return error.message;
     }
 }
 
 export async function logout() {
-    const setIsLoggedIn = useAuth(state => state.setIsLoggedIn);
-    const setUser = useAuth(state => state.setUser);
+    // const setIsLoggedIn = useAuth(state => state.setIsLoggedIn);
+    // const setUser = useAuth(state => state.setUser);
 
-    let res;
     try {
-        res = await axiosInstance.post(routes.logout);
+        const res = await axiosInstance.post(routes.logout);
         if (res.data.success) {
-            setUser(null);
-            setIsLoggedIn(false);
+            // setUser(null);
+            // setIsLoggedIn(false);
         }
     } catch (error) {
-        return res.data.data.message;
-        console.error('Logout failed', error);
+        return error.message;
+       // console.error('Logout failed', error);
     }
 }
 
 export async function getUser() {
-    let res;
+
     try {
-        res = await axiosInstance.get(routes.getUser);
-        if(res.data.success) {
+        const res = await axiosInstance.get(routes.getUser);
+        if (res.data.success) {
             return res.data;
         }
     } catch (error) {
-        return res.data.message;
+        return error.message;
     }
 }
 
 export async function getUserByUsername(username) {
-    let res;
+
     try {
-        res = await axiosInstance.get(`${routes.getUser}/${username}`);
-        if(res.data.success) {
+        const res = await axiosInstance.get(`${routes.getUser}/${username}`);
+        if (res.data.success) {
             return res.data;
         }
     } catch (error) {
-        return res.data.message;
+        return error.message;
+    }
+}
+
+export async function getChat(chatId) {
+
+    try {
+        const res = await axiosInstance.get(`${chatRoutes.getChat}/${chatId}`);
+        if (res.data.success) {
+            return res.data;
+        }
+    } catch (error) {
+        return error.message || error.message
+    }
+}
+
+export async function createNewChatRoom(receiverId) {
+
+    try {
+        const res = await axiosInstance.post(`${chatRoutes.createChatRoom}/${receiverId}`);
+        if (res.data.success) {
+            return res.data;
+        }
+    } catch (error) {
+        return error.message || error.message
+    }
+}
+
+export async function getConversations() {
+
+    try {
+        const res = await axiosInstance.get(routes.getChatRooms);
+        if (res.data.success) {
+            return res.data;
+        }
+    } catch (error) {
+        return error.message || error.message;
+    }
+}
+
+export async function getMessages(chatRoomId, before = "") {
+
+    try {
+        const res = await axiosInstance.get(`${routes.getUserChat}/${chatRoomId}`, {
+            params: { before }
+        });
+        if (res.data.success) {
+            return res.data;
+        }
+    } catch (error) {
+        return error.message || error.message;
+    }
+}
+
+export async function saveMessages() {
+
+    try {
+        const res = await axiosInstance.get(`${routes?.saveMessages}/${chatRoomId}`, {
+            params: { before }
+        });
+        if (res.data.success) {
+            return res.data;
+        }
+    } catch (error) {
+        return error.message || error.message;
     }
 }

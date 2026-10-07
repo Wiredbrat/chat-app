@@ -13,7 +13,6 @@ function ChatRoute() {
 
   useEffect(() => {
     if (conversationId) chat.selectConversation(conversationId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId]);
 
   return (

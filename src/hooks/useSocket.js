@@ -1,15 +1,21 @@
 import { useRef, useEffect } from "react";
 import useSocketStore from "../store/useSocketStore";
+import useChatStore from "../store/useChatStore";
+// import { useChat } from "./useChat";
+import { useParams } from "react-router-dom";
+import useOnlineStore from "../store/useOnlineStore";
 
 export function useSocket(url) {
-  const setSocket = useSocketStore((state) => state.setSocket);
-  const setIsConnected = useSocketStore((state) => state.setIsConnected);
+  const { setSocket, setIsConnected } = useSocketStore();
+  const { activeChat, addMessage } = useChatStore();
+  const { addOnlineUser, removeOnlineUser } = useOnlineStore();
+
   const socketRef = useRef();
   useEffect(() => {
     const wsInstance = new WebSocket(url);
     socketRef.current = wsInstance;
 
-    console.log(socketRef.current);
+    // console.log(socketRef.current);
 
     socketRef.current.onopen = () => {
       setIsConnected(true);
@@ -18,9 +24,20 @@ export function useSocket(url) {
     socketRef.current.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log("message received: ",event)
+        // console.log("activeChat>>>>", useChatStore.getState().activeChat)
+        if(data.type === "presence") {
+          console.log("message received: ", data);
+          if(data?.data?.status === "online") {
+            addOnlineUser(data?.data?.userId);
+          } else {
+            removeOnlineUser(data.userId);
+          }
+        }
+        // if(data?.data?.type === "Incoming") {
+        addMessage(data.data.roomId, data?.data);
+        // }
       } catch (error) {
-        console.error(error);
+        // console.error(error);
       }
     };
 
@@ -29,19 +46,19 @@ export function useSocket(url) {
     };
 
     socketRef.current.onerror = (error) => {
-      console.error('WebSocket Error:', error);
+      // console.error('WebSocket Error:', error);
     };
 
     setSocket(socketRef.current);
 
-    // Clean up connection when the component unmounts
     return () => {
-      // socketRef.current.close();
-      // if (socketRef.current === socketRef.current) {
+      if (socketRef.current) {
+        socketRef.current.close();
         socketRef.current = null;
-        setSocket(null);
-        setIsConnected(false);
-      // }
+      }
+
+      setSocket(null);
+      setIsConnected(false);
     };
   }, [url, setSocket, setIsConnected]);
 }

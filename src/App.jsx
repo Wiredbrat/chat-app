@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import AuthPage from './components/AuthPage.jsx';
 import ProtectedRoute from './routes/ProtectedRoute.jsx';
@@ -11,23 +11,29 @@ import { useEffect } from 'react';
 
 function App() {
   const auth = useAuth(state => state.user);
-  const setUser = useAuth(state => state.setUser);
-
+  const {setUser, setIsLoggedIn, chatRooms }= useAuth(state => state);
+  const navigate = useNavigate();
+  // console.log(chatRooms )
   const getUserData = async () => {
     try {
       const user = await getUser();
-      console.log(user)
+      if(!user.success) {
+        navigate("/login");
+        return;
+      }
       setUser(user.data);
+      setIsLoggedIn(true);
     } catch (error) {
-      console.log(error)
+     // console.log(error);
+      navigate("/login");
     }
   }
   useEffect(() => {
     getUserData();
   }, [])
-  // console.log(auth)
-  // if (auth) return null; // avoid a login-page flash while session is restored
+  //// console.log(auth)
   useSocket(import.meta.env.VITE_SOCKET_URL);
+  // if (auth) return null; // avoid a login-page flash while session is restored
   return (
     <>
       <Routes>

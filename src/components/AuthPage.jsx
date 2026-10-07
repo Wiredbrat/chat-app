@@ -23,24 +23,30 @@ function AuthPage() {
         const res = await login({username, password});
         console.log(res)
         if(res.success) {
-          const user = await getUser();
-          setUser(user.data);
-          console.log(useAuth.getState());
-          setIsLoggedIn(true);
-          navigate('/');
           toast.success('Login Success');
+          await getUser();
+          navigate('/');
+        } else {
+          toast.error(res?.message || 'something went wrong');
         }
       } else {
         const res = await signup({username, email, password});
-  
+        console.log(res)
+
         if(res.success) {
           toast.success('New User Added')
           navigate('/login');
+        } else {
+          toast.error(res?.message || 'something went wrong');
         }
       }
     } catch (error) {
-      console.error(error)
+     // console.error(error)
       toast.error('Something Went Wrong')
+    } finally {
+      setUserName("")
+      setPassword("")
+      setEmail("")
     }
   };
 
@@ -61,7 +67,7 @@ function AuthPage() {
         </p>
 
         <form className="auth__form" onSubmit={handleSubmit}>
-          
+
             <label className="auth__field">
               <span>User Name</span>
               <input type="text" value={username} onChange={(e) => setUserName(e.target.value)} placeholder="Jane Doe" autoComplete="name" />
