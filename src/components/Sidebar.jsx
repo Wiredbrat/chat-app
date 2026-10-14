@@ -5,11 +5,18 @@ import NewChatModal from './NewChatModal.jsx';
 import useAuth from '../store/userStore.js';
 import useChatStore from '../store/useChatStore.js';
 import { getDayLabel, getLocalTime } from '../utils/utils.js';
+import { createNewGroup } from '../api/connection.js';
+import toast from 'react-hot-toast';
+import { useChat } from '../hooks/useChat.js';
 
 function Sidebar({ conversations, activeId, onSelect, onQueryChange, isOpen, onClose, user, onLogout, onNewChat }) {
+  const { chatRooms } = useAuth();
+  const {setConversations} = useChat()
+  const { addMessage } = useChatStore();
   const [query, setQuery] = useState();
   const [showNewChat, setShowNewChat] = useState(false);
-  const {getLastMessage} = useChatStore();
+  const { getLastMessage, lastMessages } = useChatStore();
+  const [sortedConversation, setSortedConversations] = useState([]);
   const handleQuery = (e) => {
     setQuery(e.target.value);
     onQueryChange(e.target.value);
@@ -20,15 +27,41 @@ function Sidebar({ conversations, activeId, onSelect, onQueryChange, isOpen, onC
     setShowNewChat(false);
   };
 
-  // useEffect(() => {
-  //   conversations.sort(
-  //     (a, b) => {
-  //       const aLastMessage = getLastMessage(a?._id);
-  //       const bLastMessage = getLastMessage(b?._id);
-  //       return new Date(aLastMessage?.createdAt || aLastMessage?.timestamp) - new Date(bLastMessage?.createdAt || bLastMessage?.timestamp);
-  //     }
-  //   );
-  // })
+  const handleGroupCreation = async (payload) => {
+    const { groupName, memberIds } = payload;
+
+    try {
+      const res = await createNewGroup({receiverId: memberIds, roomName: groupName});
+      if (res.success) {
+        setConversations((prev) => [res, ...prev]);
+        chatRooms.set(res?.data?._id, res.data);
+        addMessage(res?.data?._id, []);
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+    } finally {
+      setShowNewChat(false);
+    }
+  }
+  // debugger
+  useEffect(() => {
+    setSortedConversations([...conversations].sort((a, b) => {
+      const aLastMessage = getLastMessage(a?._id);
+      const bLastMessage = getLastMessage(b?._id);
+
+      const aTime = new Date(
+        aLastMessage?.createdAt || aLastMessage?.timestamp || 0
+      ).getTime();
+
+      const bTime = new Date(
+        bLastMessage?.createdAt || bLastMessage?.timestamp || 0
+      ).getTime();
+
+      return bTime - aTime;
+    }));
+
+    // Use sortedConversations wherever you need the sorted list.
+  }, [conversations, getLastMessage]);
 
  // console.log("convo>>>",conversations)
   return (
@@ -56,8 +89,8 @@ function Sidebar({ conversations, activeId, onSelect, onQueryChange, isOpen, onC
         </button>
 
         <ul className="sidebar__list" style={{ listStyle: 'none', margin: 0 }}>
-          {conversations?.map((c) => {
-            const lastMessage = getLastMessage(c?._id);
+          {sortedConversation?.map((c) => {
+            const lastMessage = getLastMessage(c?._id) || lastMessages?.[c?._id];
             const date = getDayLabel(lastMessage?.createdAt || lastMessage?.timestamp);
             const stamp = date === "Today" ? getLocalTime(lastMessage?.createdAt || lastMessage?.timestamp) : date;
             return (
@@ -72,13 +105,14 @@ function Sidebar({ conversations, activeId, onSelect, onQueryChange, isOpen, onC
                 }}
                 aria-current={c?._id === activeId}
               >
-                <Avatar initials={c?.initials} online={c?.online} />
+                {/* {console.log(c)}*/}
+                <Avatar avatar={c?.participants[0]?.avatar || ''} online={c?.online} />
                 <span className="conversation__body">
                   <span className="conversation__top">
-                    <span className="conversation__name">{c?.participants[0]?.username}</span>
+                    <span className="conversation__name">{c.isGroup? c.roomName : c?.participants[0]?.username}</span>
                     <span className="conversation__time">{stamp || ""}</span>
                   </span>
-                  <span className="conversation__preview">{ lastMessage?.message || ""}</span>
+                  <span className="conversation__preview">{ lastMessage?.message || "Tap to start a conversation"}</span>
                 </span>
                 {c?.unread > 0 && <span className="conversation__unread">{c?.unread || ""}</span>}
               </button>
@@ -103,7 +137,7 @@ function Sidebar({ conversations, activeId, onSelect, onQueryChange, isOpen, onC
         )}
       </aside>
       <div className={`sidebar-backdrop ${isOpen ? 'sidebar-backdrop--open' : ''}`} onClick={onClose} />
-      {showNewChat && <NewChatModal onClose={() => setShowNewChat(false)} onCreate={(userId) => handleCreate(userId)} />}
+      {showNewChat && <NewChatModal onClose={() => setShowNewChat(false)} onCreate={(userId) => handleCreate(userId)} onCreateGroup={handleGroupCreation}/>}
     </>
   );
 }

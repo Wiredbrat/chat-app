@@ -41,11 +41,12 @@ function Composer({ onSend }) {
       <button
         type="button"
         className="composer__send"
+        onMouseDown={(e) => e.preventDefault()}
         onClick={handleSend}
         disabled={!value.trim()}
         aria-label="Send message"
       >
-        <SendIcon />
+        <SendIcon color={localStorage.getItem("theme") === "dark" ? "#000000": "#FFFFFF"} />
       </button>
     </div>
   );

@@ -25,7 +25,7 @@ function initialsFromName(name) {
  */
 export function useChat() {
   const { updateUser, user, chatRooms, updateChatRooms } = useAuth();
-  const { messages, addMessage } = useChatStore();
+  const { messages, addMessage, setLastMessage } = useChatStore();
   const [conversations, setConversations] = useState([...chatRooms.values()]);
   const [newConversation, setNewConversation] = useState({});
   const [typingId, setTypingId] = useState(null);
@@ -47,6 +47,7 @@ export function useChat() {
       if (chats.success) {
         updateChatRooms(chats.data);
         setConversations(chats.data);
+        setLastMessage(chats.lastMessages)
       }
     } catch (error) {
      // console.log(error)
@@ -62,7 +63,7 @@ export function useChat() {
     if (!query.trim()) return conversations;
     const q = query.toLowerCase();
    // console.log(conversations)
-    return conversations.filter((c) => c.participants[0].username?.toLowerCase().includes(q));
+    return conversations.filter((c) => c.participants[0].username?.toLowerCase().includes(q) ||c?.roomName?.toLowerCase().includes(q));
   }, [conversations, query]);
 
   const newConversationData = async (receiverId) => {
@@ -120,11 +121,11 @@ export function useChat() {
   const sendMessage = useCallback((text) => {
     const trimmed = text;
     if (!trimmed || !activeChat) return;
-
+    // debugger
     const data = {
       _id: generateUUID(),
       roomId: activeConversation?._id,
-      receiverId: activeConversation?.participants[0]?._id,
+      receiverId: activeConversation?.participants.map((p) => p._id),
       message: text,
       timestamp: new Date().toISOString(),
       type: "Outgoing"
@@ -157,6 +158,7 @@ export function useChat() {
     activeConversation,
     selectConversation,
     createConversation,
+    setConversations,
     sendMessage,
     typingId,
     query,

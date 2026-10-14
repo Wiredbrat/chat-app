@@ -190,18 +190,18 @@ function ChatWindow({ conversation, isTyping, onSend, onOpenSidebar }) {
         >
           <MenuIcon />
         </button>
-        <Avatar initials={conversation.initials} online={conversation.online} />
+        <Avatar avatar={conversation?.participants?.[0]?.avatar} online={conversation.online} />
         <div className="chat__header-info">
           <div className="chat__header-name">
-            {conversation?.participants?.[0]?.username}
+            {conversation?.isGroup? conversation.roomName : conversation?.participants?.[0]?.username}
           </div>
           <div
             className="chat__header-status"
             style={{
-              color: getOnlineUsers(conversation?.participants[0]?._id) ? "var(--color-online)" : "var(--color-ink-faint)",
+              color: !conversation?.isGroup && getOnlineUsers(conversation?.participants[0]?._id) ? "var(--color-online)" : "var(--color-ink-faint)",
             }}
           >
-            {getOnlineUsers(conversation?.participants[0]?._id) ? "Online" : "Offline"}
+            {conversation?.isGroup ? <span className="group__users">{conversation?.participants?.map(p => p.username).join(", ")} </span> : getOnlineUsers(conversation?.participants[0]?._id) ? "Online" : "Offline"}
           </div>
         </div>
       </header>
@@ -222,14 +222,13 @@ function ChatWindow({ conversation, isTyping, onSend, onOpenSidebar }) {
           <>
             {/* <div className="chat__day-divider">Today</div>*/}
             {allMessages.map((m, index) => {
-              const prevMessage =
-                index > 0 ? allMessages[index - 1] : allMessages[index];
-              const showDivider =
-                index === 0 ||
+              const prevMessage = index > 0 ? allMessages[index - 1] : allMessages[index];
+              const showDivider = index === 0 ||
                 isDifferentDay(
                   prevMessage?.createdAt || prevMessage?.timestamp,
                   m?.createdAt || m?.timestamp,
                 );
+              // const username = conversation?.participants.find((user) => user?._id === m?.sender)?.username;
               // console.log(prevMessage, m, index)
 
               return (
@@ -239,7 +238,7 @@ function ChatWindow({ conversation, isTyping, onSend, onOpenSidebar }) {
                       <span>{getDayLabel(m?.createdAt || m?.timeStamp)}</span>
                     </div>
                   )}
-                  <MessageBubble key={m?._id} message={m} />
+                  <MessageBubble key={m?._id} message={m} showAvatar={conversation?.isGroup} participants={conversation?.participants} />
                 </React.Fragment>
               );
             })}

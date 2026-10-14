@@ -116,6 +116,19 @@ export async function createNewChatRoom(receiverId) {
     }
 }
 
+export async function createNewGroup(payload) {
+
+    try {
+        const res = await axiosInstance.post(`${chatRoutes.createChatRoom}`, payload);
+        if (res.data.success) {
+            return res.data;
+        }
+    } catch (error) {
+        return error.message || error.message
+    }
+}
+
+
 export async function getConversations() {
 
     try {

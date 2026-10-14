@@ -5,18 +5,26 @@ const useChatStore = create((set, get) => ({
   activeChat: "",
   beforeTimestamp: {}, // { [conversationId]: string }
   initialChatRendered: {}, // { [conversationId]: boolean }
+  lastMessages: {},
 
   getInitialChatRendered: (chatId) => {
     return get().initialChatRendered[chatId];
   },
 
-  setBeforeTimestamp: (chatId, timestamp) => set(
-      { beforeTimestamp: { ...get().beforeTimestamp, [chatId]: timestamp } }
-  ),
+  setBeforeTimestamp: (chatId, timestamp) =>
+    set({ beforeTimestamp: { ...get().beforeTimestamp, [chatId]: timestamp } }),
 
   getBeforeTimestamp: (chatId) => {
     return get().beforeTimestamp[chatId];
   },
+
+  setLastMessage: (messages) => set(() => {
+    const entries = messages.map((m) => {
+      const message = JSON?.parse(m);
+      return [message?.roomId, message];
+    });
+    return {lastMessages: Object.fromEntries(entries)};
+  }),
 
   getLastMessage: (chatId) => {
     const chat = get().messages[chatId];
@@ -34,7 +42,7 @@ const useChatStore = create((set, get) => ({
         ? prevMessages[0]?.messages[0]
         : prevMessages[0];
 
-      const beforeCursor = oldestMsg?.createdAt || '';
+      const beforeCursor = oldestMsg?.createdAt || "";
 
       return {
         messages: {

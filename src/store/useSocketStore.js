@@ -8,6 +8,7 @@ const useSocketStore = create((set, get) => ({
   setIsConnected: (isConnected) => set({isConnected}),
 
   sendClientMessage: (data) => {
+    {/* console.log("MEssage Data: ", data)*/}
     const socket = get().socket;
 
     if(socket && socket.readyState === WebSocket.OPEN) {

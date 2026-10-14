@@ -26,7 +26,7 @@ export function useSocket(url) {
         const data = JSON.parse(event.data);
         // console.log("activeChat>>>>", useChatStore.getState().activeChat)
         if(data.type === "presence") {
-          console.log("message received: ", data);
+          // console.log("message received: ", data);
           if(data?.data?.status === "online") {
             addOnlineUser(data?.data?.userId);
           } else {
