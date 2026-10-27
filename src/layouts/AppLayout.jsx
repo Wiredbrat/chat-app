@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
-import Sidebar from '../components/Sidebar.jsx';
-import { useChat } from '../hooks/useChat.js';
-import { debounce } from '../utils/utils.js';
-import { getUserByUsername } from '../api/connection.js';
+import { useEffect, useState } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import Sidebar from "../components/Sidebar.jsx";
+import { useChat } from "../hooks/useChat.js";
+import { debounce } from "../utils/utils.js";
+import { getUserByUsername } from "../api/connection.js";
 
 /**
  * The persistent shell for everything behind auth: the sidebar stays
@@ -16,17 +16,18 @@ function AppLayout({ auth }) {
   const chat = useChat();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const location = useLocation();
 
   const handleSelect = (id) => {
     chat.selectConversation(id);
     navigate(`/chat/${id}`);
   };
 
-  const handleNewChat = async(id) => {
-    chat.setQuery('');
+  const handleNewChat = async (id) => {
+    chat.setQuery("");
     const newChatId = await chat.createConversation(id);
-   // console.log("new chat ",newChatId)
-    if(newChatId) {
+    // console.log("new chat ",newChatId)
+    if (newChatId) {
       navigate(`/chat/${newChatId}`);
       setSidebarOpen(false);
     }
@@ -34,9 +35,17 @@ function AppLayout({ auth }) {
 
   const handleLogout = () => {
     auth.logout();
-    toast.success('Logged out');
-    navigate('/login', { replace: true });
+    toast.success("Logged out");
+    navigate("/", { replace: true });
   };
+
+  // useEffect(() => {
+  //   console.log(sidebarOpen)
+  //   console.log(location.pathname)
+  //   if (sidebarOpen && location.pathname === "/chat") {
+  //     setSidebarOpen(true);
+  //   }
+  // })
 
   return (
     <div className="app">
@@ -53,7 +62,15 @@ function AppLayout({ auth }) {
         onLogout={handleLogout}
         onNewChat={handleNewChat}
       />
-      <Outlet context={{ chat, openSidebar: () => setSidebarOpen(true) }} />
+      <Outlet
+        context={{
+          chat,
+          openSidebar: () => {
+            setSidebarOpen(true);
+            navigate('/chat')
+          },
+        }}
+      />
     </div>
   );
 }

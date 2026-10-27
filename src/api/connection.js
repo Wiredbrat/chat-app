@@ -9,28 +9,29 @@ const axiosInstance = axios.create({
     withCredentials: true,
 });
 
-// axiosInstance.interceptors.request.use(
-//     (config) => {
-//         const navigate = useNavigate();
-//         const { isLoggedIn } = useAuth.getState();
+axiosInstance.interceptors.request.use(
+    (config) => {
+        // const navigate = useNavigate();
+        const { isLoggedIn } = useAuth.getState();
 
-//         // Scenario A: Block the request entirely if not logged in
-//         if (!isLoggedIn && !config.url.includes('/login')) {
-//             navigate('/login');
-//             return Promise.reject(new Error('User is not authenticated. Request cancelled.'));
-//         }
+        // Scenario A: Block the request entirely if not logged in
+        if (!isLoggedIn && !config.url.includes('/')) {
+            // navigate('/login');
+            window.location.href = "/login";
+            return Promise.reject(new Error('User is not authenticated. Request cancelled.'));
+        }
 
-//         // Scenario B: Attach a custom header flag if logged in
-//         if (isLoggedIn) {
-//             config.headers['X-User-Authenticated'] = 'true';
-//         }
+        // Scenario B: Attach a custom header flag if logged in
+        if (isLoggedIn) {
+            config.headers['X-User-Authenticated'] = 'true';
+        }
 
-//         return config;
-//     },
-//     (error) => {
-//         return Promise.reject(error);
-//     }
-// );
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
 
 export async function signup(payload) {
 
