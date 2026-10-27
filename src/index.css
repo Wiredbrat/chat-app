@@ -1074,7 +1074,7 @@ button {
   overflow-y: auto;
 }
 
-.modal__form::-webkit-scrollbar, .sidebar__list::-webkit-scrollbar {
+.modal__form::-webkit-scrollbar{
   display: none;
 }
 
